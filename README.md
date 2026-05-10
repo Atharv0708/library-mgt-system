@@ -19,7 +19,7 @@ A modern, automated, and web-based Library Management System developed using Pyt
 Follow these simple steps to run this project on your local system:
 
 **1. Clone the repository:**
-`git clone https://github.com/your-username/smart-library-mgt-system.git`
+`git clone https://github.com/Atharv0708/library-mgt-system.git`
 `cd smart-library-mgt-system`
 
 **2. Create and activate a Virtual Environment:**
