@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Library</title>
+    <!-- Bootstrap & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+       /* 1. Modern Fixed Sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            
+            background: linear-gradient(180deg, #343a40 0%, #343a40 100%); 
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth animation */
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1); /* Shadow to sidebar */
+        }
+
+        .sidebar.collapsed {
+            left: -250px;
+        }
+
+        .sidebar .brand {
+            padding: 20px 25px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar a {
+            color: #aeb2c5;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin: 8px 15px;
+            border-radius: 8px; /* Rounded Buttons (Apple/Google style) */
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar a i {
+            font-size: 1.1rem;
+        }
+
+        /* Hover Effect */
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            transform: translateX(5px); /* Action of slightly moving towards the right side */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Logout button effect */
+        .sidebar .logout-btn:hover {
+            background: rgba(220, 53, 69, 0.1); /* Light Red colour */
+            color: #f51717 !important;
+        }
+
+        /* 2. Main Content */
+        .main-content {
+            margin-left: 250px; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+            padding: 0;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* 3. Top Navbar */
+        .top-navbar {
+            background-color: white;
+            height: 60px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+        }
+
+        #sidebarToggle {
+            background: transparent;
+            border: none;
+            font-size: 1.4rem;
+            color: #6c757d;
+            cursor: pointer;
+        }
+
+        /* 4. Content Area (Padding for only Books) */
+        .content-area {
+            flex-grow: 1; /* Because of this, the footer is always pushed to the very bottom */
+            padding: 1.5rem; /* To prevent the books from sticking to the edges */
+        }
+
+        /* 5. Footer */
+        footer {
+            background-color: #212529;
+            color: #cfd8dc;
+            width: 100%;
+            margin: 0; 
+            padding: 2rem 1.5rem 1rem 1.5rem;
+        }
+        
+        footer a {
+            text-decoration: none;
+            color: #cfd8dc;
+        }
+        footer a:hover {
+            color: white;
+        }
+
+        /* For making quick links to the center */
+        .quick-links-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 3D Book Card Effect */
+        .book-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none; /* To remove the simple border of the card */
+            border-radius: 12px; /* To make the corners slightly rounded. */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08); /* Normal shadow */
+        }
+
+        /* when the mouse cursor is moved over the card then */
+        .book-card:hover {
+            transform: translateY(-8px); /* card will be lifted slightly upward */
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important; /* shadow will become darker and larger */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar shadow" id="mySidebar">
+        <div class="brand">📚 Smart Library</div>
+        <div class="mt-3">
+            <a href="{% url 'book_list' %}"><i class="fas fa-home me-3"></i> Home Catalog</a>
+            <a href="{% url 'student_dashboard' %}"><i class="fas fa-chart-pie me-3"></i> My Dashboard</a>
+            <a href="{% url 'change_password' %}"><i class="fas fa-key me-3"></i> Change Password</a>
+        </div>
+        <div style="position: absolute; bottom: 20px; width: 100%;">
+            <a href="{% url 'logout' %}" class="text-danger logout-btn" style="border-top: 1px solid #4b545c; border-radius: 0; margin: 0; padding: 15px 20px;">
+                <i class="fas fa-sign-out-alt me-3"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="mainContent">
+        
+        <!-- Top Navbar -->
+        <nav class="top-navbar shadow-sm">
+            <div>
+                <button id="sidebarToggle"><i class="fas fa-bars"></i></button>
+            </div>
+            <div>
+                <!-- Django’s authentication logic -->
+                {% if user.is_authenticated %}
+                    <span class="fw-bold text-dark fs-5">
+                        <i class="fas fa-user-circle me-2 text-primary"></i>
+                        Welcome, {{ user.username }}
+                    </span>
+                {% else %}
+                    <!-- If the user is not logged in, these buttons will be visible -->
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary border-2 fw-bold me-2">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </a>
+                    <a href="{% url 'register' %}" class="btn btn-primary fw-bold">
+                        <i class="fas fa-user-plus me-1"></i> Register
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <!-- Page Content Area -->
+        <div class="content-area">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <footer style="background-color: #212529;">
+            <div class="container-fluid py-3 px-4"> <!-- padding (py-3) -->
+                <div class="row">
+                    
+                    <!-- Column 1: About -->
+                    <div class="col-md-4 mb-3"> <!-- less margin -->
+                        <h5 class="text-white fw-bold mb-2">📚 Smart Library</h5>
+                        <p class="small mb-0" style="color: #adb5bd; line-height: 1.4;">
+                            A modern and automated Library Management System. Developed as an MCA Mini Project to simplify book issuing and tracking.
+                        </p>
+                    </div>
+                    
+                    <!-- Column 2: Quick Links -->
+                    <div class="col-md-4 mb-3 quick-links-center">
+                        <h5 class="text-white fw-bold mb-2">Quick Links</h5>
+                        <a href="{% url 'book_list' %}" class="d-block mb-1 text-decoration-none small" style="color: #adb5bd;">
+                            <i class="fas fa-home me-2 text-white"></i> Home Catalog
+                        </a>
+                        <a href="{% url 'student_dashboard' %}" class="d-block text-decoration-none small" style="color: #adb5bd;">
+                            <i class="fas fa-chart-pie me-2 text-success"></i> My Dashboard
+                        </a>
+                    </div>
+                    
+                    <!-- Column 3: Contact Us -->
+                    <div class="col-md-4 mb-2">
+                        <h5 class="text-white fw-bold mb-2">Contact Us</h5>
+                        <p class="small mb-1" style="color: #adb5bd;">
+                            <i class="fas fa-map-marker-alt me-2 text-danger"></i> DKTE Campus, Kolhapur, Maharashtra
+                        </p>
+                        <p class="small mb-1" style="color: #adb5bd;">
+                            <i class="fas fa-envelope me-2 text-white"></i> admin@smartlibrary.com
+                        </p>
+                        <p class="small mb-0" style="color: #adb5bd;">
+                            <i class="fas fa-phone me-2 text-white"></i> +91 000 000 0000
+                        </p>
+                    </div>
+
+                </div>
+                <hr class="border-secondary my-2"> <!-- Reduce the space above and below the line -->
+                <div class="text-center" style="font-size: 0.8rem; color: #adb5bd;">
+                    © 2026 Smart Library Management System
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('mySidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>
